@@ -22,6 +22,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 import java.io.File;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import org.apache.james.filesystem.api.FileSystem;
@@ -29,6 +30,7 @@ import org.apache.james.server.core.filesystem.FileSystemImpl;
 import org.junit.jupiter.api.Test;
 
 import com.google.common.collect.ImmutableMap;
+import com.linagora.calendar.smtp.Translator;
 
 public class HtmlBodyRendererTest {
     static FileSystem fileSystem = FileSystemImpl.forTesting();
@@ -51,6 +53,29 @@ public class HtmlBodyRendererTest {
         assertThat(result.trim())
             .isEqualTo("""
                 <!DOCTYPE html><html class="mail"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"></head><body><div class="wrapper mail-content"><div class="grid-container"><div class="header"><div class="logo"><a href="http://localhost:8080"><img src="cid:logo" alt="OpenPaas Logo"></a></div><div class="subject"><div class="title">Import Report</div></div></div><div class="import"><span>Your Import is done see below the report :<ul><li> Contact(s) imported successfully</li><li> Contact(s) not imported</li></ul></span></div></div></div></body></html>""".trim());
+    }
+
+    @Test
+    void i18nShouldSucceed() throws Exception {
+        File templateDirectory = fileSystem.getFile("classpath://templates/i18n");
+        HtmlBodyRenderer htmlBodyRenderer = HtmlBodyRenderer.forPath(templateDirectory.getAbsolutePath());
+
+        String resultEnglish = htmlBodyRenderer.render(ImmutableMap.of(
+            "translate", new Translator(Locale.ENGLISH)));
+        String resultFrance = htmlBodyRenderer.render(ImmutableMap.of(
+            "translate", new Translator(Locale.FRANCE)));
+
+        assertThat(resultEnglish)
+            .contains("""
+                <div class="subject"><div class="title">Test Subject</div></div>""".trim())
+            .contains("""
+                <ul><li>Yes</li><li>Maybe</li><li>No</li></ul>""".trim());
+
+        assertThat(resultFrance)
+            .contains("""
+                <div class="subject"><div class="title">Sujet de test</div></div>""".trim())
+            .contains("""
+                <ul><li>Oui</li><li>Peut-&ecirc;tre</li><li>Non</li></ul>""".trim());
     }
 
 }

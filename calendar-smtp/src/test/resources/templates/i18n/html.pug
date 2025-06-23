@@ -1,0 +1,16 @@
+doctype html
+html.mail
+    head
+        meta(charset='utf-8')
+        meta(name='viewport', content='width=device-width, initial-scale=1')
+    body
+        .wrapper.mail-content
+            .grid-container
+                .header
+                    .subject
+                        div.title #{translate.get('Subject')}
+                .import
+                    ul
+                        li #{translate.get('Yes')}
+                        li #{translate.get('Maybe')}
+                        li #{translate.get('No')}
